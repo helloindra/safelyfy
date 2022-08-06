@@ -1,0 +1,16 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap");
+
+select {
+    margin-top: -4px;
+    padding: 8px;
+    border-color: #d8dde3;
+    border-width: 2px;
+    border-radius: 12px;
+    width: 100%;
+}
+
+option {
+    padding: 8px;
+    background-color: #ffffff;
+    color: black;
+}
