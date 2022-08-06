@@ -36,11 +36,56 @@ export const NewEquipments = () => {
     })
 
     const handleSetEquipmentData = (event: any) => {
+        console.log(event.target.name, event.target.value)
         setEquipment({ ...equipment, [event.target.name]: event.target.value })
     }
 
-    const handleSubmitEquipment = () => {
+    const handleSubmitEquipment = async () => {
+        const {
+            ownerNumber,
+            costCenter,
+            location,
+            serialNumber,
+            equipmentCategory,
+            chipId,
+            equipmentStatus,
+            vendorNumber,
+            checklistId,
+            company,
+            manufacturer,
+            inspectionDate,
+            capacity1,
+            capacity2,
+            capacity3,
+            capacityUnit,
+            description,
+        } = equipment
         console.log(equipment)
+        // const { data, error } = await supabase.from("equipments").insert([
+        //     {
+        //         workspaceId: "b8cab7ff-a584-4dac-974f-9555fe096e33",
+        //         ownerNumber,
+        //         costCenter,
+        //         serialNumber,
+        //         chipId,
+        //         equipmentStatus,
+        //         vendorNumber,
+        //         location: 1,
+        //         equipmentCategory: Number(equipmentCategory),
+        //         checklistId: Number(checklistId),
+        //         company: Number(company),
+        //         manufacturer: Number(manufacturer),
+        //         inspectionDate,
+        //         capacity: {
+        //             capacity1,
+        //             capacity2,
+        //             capacity3,
+        //             capacityUnit,
+        //         },
+        //         description,
+        //     },
+        // ])
+        // console.log(data, error)
     }
 
     const handleFetchEquipmentData = async () => {
@@ -117,6 +162,7 @@ export const NewEquipments = () => {
                                         <select name="location" onChange={handleSetEquipmentData}>
                                             <option value={9999}>Choose one</option>
                                             {locationData.map((item: any) => {
+                                                console.log(item)
                                                 return <option value={item.id}>{item.data.name}</option>
                                             })}
                                         </select>
