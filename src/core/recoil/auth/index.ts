@@ -9,10 +9,12 @@ export const authUserState = atom<any>({
     key: "authUserState",
     default: {
         id: "",
+        workspaceId: "",
         firstName: "",
         lastName: "",
         email: "",
         avatar: "",
-        needsetup: false,
+        hasWorkspace: false,
+        workspaceName: "no workspace",
     },
 })

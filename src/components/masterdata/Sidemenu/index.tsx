@@ -56,17 +56,18 @@ export const Sidemenu = () => {
                 </Link>
             </NextLink>
             <Spacer y={1} />
-            <Link>
-                <Text
-                    h5
-                    css={{
-                        color: "$accents4",
-                        // "&:hover": { color: "$primary" },
-                    }}
-                >
-                    Inspection Checklists
-                </Text>
-            </Link>
+            <NextLink href="/app/masterdata/inspection-checklist">
+                <Link>
+                    <Text
+                        h5
+                        css={{
+                            "&:hover": { color: "$primary" },
+                        }}
+                    >
+                        Inspection Checklists
+                    </Text>
+                </Link>
+            </NextLink>
         </Container>
     )
 }

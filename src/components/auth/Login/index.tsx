@@ -36,19 +36,22 @@ export const Login = () => {
             password,
         })
         if (user) {
-            setLoading(false)
-            setAuthUser({
-                id: user.id,
-                email: user.email,
-                firstName: user.user_metadata.firstName,
-                lastName: user.user_metadata.lastName,
-                jobRole: user.user_metadata.jobRole,
-                avatar: user.user_metadata.avatar,
-            })
-            if (user.user_metadata.needsetup) {
-                setAuthMode("needsetup")
-            } else {
-                setAuthMode("authenticated")
+            const { data, error } = await supabase.from("workspaces").select("*").eq("owner", user.id).single()
+            if (data) {
+                setLoading(false)
+                setAuthUser({
+                    id: user.id,
+                    workspaceId: data.uuid,
+                    email: user.email,
+                    firstName: user.user_metadata.firstName,
+                    lastName: user.user_metadata.lastName,
+                    jobRole: user.user_metadata.jobRole,
+                    avatar: user.user_metadata.avatar,
+                    hasWorkspace: user.user_metadata.hasWorkspace,
+                })
+                setTimeout(() => {
+                    setAuthMode("authenticated")
+                }, 2000)
             }
         }
         if (error) {
@@ -76,15 +79,23 @@ export const Login = () => {
 
     useEffect(() => {
         if (session) {
-            setAuthUser({
-                id: session.user.id,
-                email: session.user.email,
-                firstName: session.user.user_metadata.firstName,
-                lastName: session.user.user_metadata.lastName,
-                jobRole: session.user.user_metadata.jobRole,
-                avatar: session.user.user_metadata.avatar,
-            })
-            setAuthMode("authenticated")
+            const getWorkspaceId = async () => {
+                const { data, error } = await supabase.from("workspaces").select("*").eq("owner", session.user.id).single()
+                if (data) {
+                    setAuthUser({
+                        id: session.user.id,
+                        workspaceId: data.uuid,
+                        email: session.user.email,
+                        firstName: session.user.user_metadata.firstName,
+                        lastName: session.user.user_metadata.lastName,
+                        jobRole: session.user.user_metadata.jobRole,
+                        avatar: session.user.user_metadata.avatar,
+                        hasWorkspace: session.user.user_metadata.hasWorkspace,
+                    })
+                    setAuthMode("authenticated")
+                }
+            }
+            getWorkspaceId()
         }
     }, [session])
 
@@ -131,7 +142,7 @@ export const Login = () => {
                     )}
                     <Spacer y={1} />
                     <Row>
-                        <Text h6>Don't have an account?</Text>
+                        <Text h6>Don&lsquo;t have an account?</Text>
                         <Spacer x={0.2} />
                         <Link onClick={handleSetModeToRegister}>
                             <Text h6 color="primary">

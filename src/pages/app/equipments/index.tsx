@@ -10,7 +10,11 @@ const HomePage: NextPage = () => {
     const authMode = useRecoilValue(authModeState)
 
     if (authMode === "authenticated") {
-        return <DashboardLayout>{addMode ? <NewEquipments /> : <Equipments addButton={() => setAddMode(true)} />}</DashboardLayout>
+        return (
+            <DashboardLayout>
+                {addMode ? <NewEquipments submitButton={() => setAddMode(false)} /> : <Equipments addButton={() => setAddMode(true)} />}
+            </DashboardLayout>
+        )
     } else if (authMode === "register") {
         return <Register />
     }

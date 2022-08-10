@@ -3,17 +3,24 @@ import { Grid, Container, Row, Link, Text, Spacer, Avatar, User, Button } from "
 import { Iconly } from "react-iconly"
 import SafelyfyLogoLight from "../../../../public/assets/safelyfylogo-light.svg"
 import { NextSeo } from "next-seo"
-import { useRecoilValue } from "recoil"
+import { useRecoilValue, useRecoilState } from "recoil"
 import { authModeState, authUserState } from "../../../core/recoil/auth"
 import { useEffect } from "react"
 import { useRouter } from "next/router"
 import NextImage from "next/image"
 import NextLink from "next/link"
+import { supabase } from "../../../utils/supabase"
 
 export const DashboardLayout = ({ title = "Safelyfy", description, withHeader = true, children }: Props) => {
     const router = useRouter()
-    const authMode = useRecoilValue(authModeState)
+    const [authMode, setAuthMode] = useRecoilState(authModeState)
     const authUser = useRecoilValue(authUserState)
+
+    const handleLogout = async () => {
+        console.log("Logout")
+        const { error } = await supabase.auth.signOut()
+        setAuthMode("login")
+    }
 
     useEffect(() => {
         if (authMode !== "authenticated") {
@@ -110,7 +117,7 @@ export const DashboardLayout = ({ title = "Safelyfy", description, withHeader = 
                                 </Link>
                             </NextLink>
                             <Spacer y={1} />
-                            <Link>
+                            <Link onClick={handleLogout}>
                                 <Row>
                                     <Iconly name="Logout" set="light" primaryColor="#fff" />
                                     <Spacer x={0.5} />
@@ -127,7 +134,7 @@ export const DashboardLayout = ({ title = "Safelyfy", description, withHeader = 
                                 <Text h2 css={{ width: "fit-content" }}>
                                     Welcome back, Indra
                                 </Text>
-                                <Text size={15}>Here's overview of your dashboard</Text>
+                                <Text size={15}>Here&lsquo;s overview of your dashboard</Text>
                             </Grid>
                             <Grid md={6}>
                                 <Container gap={0}>
@@ -140,7 +147,11 @@ export const DashboardLayout = ({ title = "Safelyfy", description, withHeader = 
                                             <Iconly name="Notification" set="light" />
                                         </Link>
                                         <Spacer x={0.5} />
-                                        <User src={authUser.avatar} name={`${authUser.firstName} ${authUser.lastName}`} />
+                                        <User
+                                            src={authUser.avatar}
+                                            name={`${authUser.firstName} ${authUser.lastName}`}
+                                            description={"@" + authUser.workspaceName}
+                                        />
                                     </Row>
                                 </Container>
                             </Grid>

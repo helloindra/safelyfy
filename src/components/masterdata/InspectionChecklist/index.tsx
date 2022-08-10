@@ -2,10 +2,10 @@ import { Grid, Container, Row, Text, Spacer, Table, Link, Textarea, Button, Card
 import React, { useState, useEffect } from "react"
 import { supabase } from "../../../utils/supabase"
 import { Sidemenu } from "../Sidemenu"
-import { useRecoilValue } from "recoil"
 import { authUserState } from "../../../core/recoil/auth"
+import { useRecoilValue } from "recoil"
 
-export const EquipmentCategory = () => {
+export const InspectionChecklist = () => {
     const authUser = useRecoilValue(authUserState)
     const [openSubmission, setOpenSubmission] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -15,22 +15,28 @@ export const EquipmentCategory = () => {
     })
     const [data, setData] = useState([])
     const [originalData, setOriginalData] = useState<any>([])
+    const [originalEquipmentCategoryData, setEquipmentCategoryData] = useState<any>([])
+    const [inspectionChecklistData, setInspectionChecklistData] = useState<any>([])
     const columns = [
         {
-            key: "name",
-            label: "Name",
+            key: "equipmentCategory",
+            label: "Equipment Category",
         },
         {
             key: "description",
             label: "Description",
         },
         {
-            key: "parentCategory",
-            label: "Parent Category",
+            key: "value",
+            label: "value",
         },
         {
-            key: "defaultSchedule",
-            label: "Default Schedule",
+            key: "remarks",
+            label: "remarks",
+        },
+        {
+            key: "attachment",
+            label: "attachment",
         },
     ]
 
@@ -39,15 +45,16 @@ export const EquipmentCategory = () => {
         message: "",
     })
 
-    const [equipmentCategory, setEquipmentCategory] = useState({
-        name: "",
+    const [inspectionChecklist, setInspectionChecklist] = useState({
+        equipmentCategory: "",
         description: "",
-        parentCategory: 0,
-        defaultSchedule: 6,
+        value: "",
+        remarks: "",
+        attachments: "",
     })
 
-    const handleSetEquipmentCategoryData = (event: any) => {
-        setEquipmentCategory({ ...equipmentCategory, [event.target.name]: event.target.value })
+    const handleSetInspectionChecklistData = (event: any) => {
+        setInspectionChecklist({ ...inspectionChecklist, [event.target.name]: event.target.value })
     }
 
     const handleSelection = (selection: any) => {
@@ -64,35 +71,36 @@ export const EquipmentCategory = () => {
         }
     }
 
+    const handleFetchingEquipmentCategoryData = async () => {
+        const { data, error } = await supabase.from("equipment-category").select("*").eq("workspaceId", authUser.workspaceId)
+        setInspectionChecklistData(data)
+    }
+
     const handleFetchingData = async () => {
         setLoading(true)
         const { data, error } = await supabase
-            .from("equipment-category")
-            .select(`id, name, description, parentCategory(id, name,description), defaultSchedule`)
+            .from("inspection-checklist")
+            .select(`equipmentCategory (id, name), data`)
             .eq("workspaceId", authUser.workspaceId)
         if (data) {
-            console.log("data", data)
+            const { data: datainspectionChecklist, error: errorinspectionChecklist } = await supabase
+                .from("inspection-checklist")
+                .select("*")
+                .eq("workspaceId", authUser.workspaceId)
+            setEquipmentCategoryData(datainspectionChecklist)
             setOriginalData(data)
             let tempData: any = []
             setLoading(false)
             data.forEach((item: any, index: number) => {
-                if (item.parentCategory) {
-                    tempData.push({
-                        key: index,
-                        name: item.name,
-                        description: item.description,
-                        parentCategory: item.parentCategory.name,
-                        defaultSchedule: `${item.defaultSchedule} months`,
-                    })
-                } else {
-                    tempData.push({
-                        key: index,
-                        name: item.name,
-                        description: item.description,
-                        parentCategory: "",
-                        defaultSchedule: `${item.defaultSchedule} months`,
-                    })
-                }
+                console.log(item)
+                tempData.push({
+                    key: index,
+                    equipmentCategory: item.equipmentCategory.name,
+                    description: item.data.description,
+                    value: item.data.value,
+                    remarks: item.data.remarks,
+                    attachment: item.data.attachment,
+                })
                 setData(tempData)
             })
         }
@@ -102,12 +110,12 @@ export const EquipmentCategory = () => {
         }
     }
 
-    const handleDeleteItemInEquipmentCategory = async () => {
+    const handleDeleteItemInProduct = async () => {
         const key = Number(selection.key)
-        const { data, error }: any = await supabase.from("equipment-category").select("*").eq("workspaceId", authUser.workspaceId)
+        const { data, error }: any = await supabase.from("inspection-checklist").select("*").eq("workspaceId", authUser.workspaceId)
         if (data) {
             const deletedKey = data[key].id
-            const { data: DeleteData, error: ErrorData } = await supabase.from("equipment-category").delete().match({ id: deletedKey })
+            const { data: DeleteData, error: ErrorData } = await supabase.from("inspection-checklist").delete().match({ id: deletedKey })
             if (DeleteData) {
                 handleFetchingData()
             }
@@ -120,25 +128,34 @@ export const EquipmentCategory = () => {
         }
     }
 
-    const handleSubmitEquipmentCategory = async () => {
+    const handleSubmitProduct = async () => {
         setLoading(true)
-        console.log(equipmentCategory)
-        const { name, description, parentCategory, defaultSchedule } = equipmentCategory
-        const { data, error } = await supabase
-            .from("equipment-category")
-            .insert([{ workspaceId: "b8cab7ff-a584-4dac-974f-9555fe096e33", name, description, parentCategory, defaultSchedule }])
+        const { equipmentCategory, description, value, remarks, attachments } = inspectionChecklist
+        const { data, error } = await supabase.from("inspection-checklist").insert([
+            {
+                workspaceId: authUser.workspaceId,
+                equipmentCategory: Number(equipmentCategory),
+                data: {
+                    description,
+                    value,
+                    remarks,
+                    attachments,
+                },
+            },
+        ])
         if (data) {
             handleFetchingData()
-            setEquipmentCategory({
-                name: "",
+            setInspectionChecklist({
+                equipmentCategory: "",
                 description: "",
-                parentCategory: 0,
-                defaultSchedule: 0,
+                value: "",
+                remarks: "",
+                attachments: "",
             })
             setLoading(false)
             setSubmissionStatus({
                 status: "success",
-                message: "Equipment Category submitted successfully",
+                message: "Inspection checklist submitted successfully",
             })
             setTimeout(() => {
                 setSubmissionStatus({
@@ -165,6 +182,7 @@ export const EquipmentCategory = () => {
     }
 
     useEffect(() => {
+        handleFetchingEquipmentCategoryData()
         handleFetchingData()
     }, [])
 
@@ -181,13 +199,13 @@ export const EquipmentCategory = () => {
                     <Container gap={0}>
                         <Row justify="space-between" align="center">
                             <Grid xs={6}>
-                                <Text h3>All Equipment Category</Text>
+                                <Text h3>All Inspection Checklist</Text>
                             </Grid>
                             <Grid xs={6}>
                                 <Container gap={0}>
                                     <Row justify="flex-end">
                                         {selection.isSelected && (
-                                            <Button auto bordered color="error" onClick={handleDeleteItemInEquipmentCategory}>
+                                            <Button auto bordered color="error" onClick={handleDeleteItemInProduct}>
                                                 Delete
                                             </Button>
                                         )}
@@ -237,35 +255,17 @@ export const EquipmentCategory = () => {
             >
                 <Modal.Header>
                     <Text id="modal-title" h4>
-                        Add new equipment category
+                        Manufacturer
                     </Text>
                 </Modal.Header>
                 <Modal.Body>
-                    <Input
-                        name="name"
-                        spellCheck={false}
-                        clearable
-                        bordered
-                        fullWidth
-                        label="Equipment Category Name"
-                        onChange={handleSetEquipmentCategoryData}
-                    />
-                    <Textarea
-                        name="description"
-                        spellCheck={false}
-                        bordered
-                        label="Description"
-                        minRows={2}
-                        maxRows={10}
-                        onChange={handleSetEquipmentCategoryData}
-                    />
-                    <Text>Parent Category</Text>
+                    <Text size={14}>Equipment Category</Text>
                     <Spacer y={0} />
-                    <select name="parentCategory" onChange={handleSetEquipmentCategoryData}>
+                    <select name="equipmentCategory" onChange={handleSetInspectionChecklistData}>
                         <option value={0} selected>
-                            No Parent
+                            Choose one
                         </option>
-                        {originalData.map(({ id, name }: any) => {
+                        {inspectionChecklistData.map(({ id, name }: any) => {
                             return (
                                 <option key={id} value={id}>
                                     {name}
@@ -273,22 +273,39 @@ export const EquipmentCategory = () => {
                             )
                         })}
                     </select>
-                    <Text>Default Schedule</Text>
-                    <Spacer y={0} />
-                    <select name="defaultSchedule" onChange={handleSetEquipmentCategoryData}>
-                        <option value={6} selected>
-                            6 monthly
-                        </option>
-                        <option value={12}>12 monthly</option>
-                        <option value={18}>18 monthly</option>
-                        <option value={24}>24 monthly</option>
-                    </select>
+                    <Textarea
+                        name="description"
+                        spellCheck={false}
+                        bordered
+                        label="Description"
+                        minRows={2}
+                        maxRows={10}
+                        onChange={handleSetInspectionChecklistData}
+                    />
+                    <Input
+                        name="value"
+                        spellCheck={false}
+                        clearable
+                        bordered
+                        fullWidth
+                        label="Value"
+                        onChange={handleSetInspectionChecklistData}
+                    />
+                    <Input
+                        name="remarks"
+                        spellCheck={false}
+                        clearable
+                        bordered
+                        fullWidth
+                        label="Remarks"
+                        onChange={handleSetInspectionChecklistData}
+                    />
                 </Modal.Body>
                 <Modal.Footer>
                     <Button disabled={loading} auto flat onClick={() => setOpenSubmission(false)}>
                         Discard
                     </Button>
-                    <Button disabled={loading} auto onClick={handleSubmitEquipmentCategory}>
+                    <Button disabled={loading} auto onClick={handleSubmitProduct}>
                         {loading ? <Loading size="xs" color="primary" /> : "Submit"}
                     </Button>
                     {submissionStatus.status === "success" && !loading && (

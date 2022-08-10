@@ -2,8 +2,11 @@ import { Grid, Container, Row, Text, Spacer, Table, Link, Textarea, Button, Card
 import React, { useState, useEffect } from "react"
 import { supabase } from "../../../utils/supabase"
 import { Sidemenu } from "../Sidemenu"
+import { authUserState } from "../../../core/recoil/auth"
+import { useRecoilValue } from "recoil"
 
 export const Manufacturer = () => {
+    const authUser = useRecoilValue(authUserState)
     const [openSubmission, setOpenSubmission] = useState(false)
     const [loading, setLoading] = useState(false)
     const [selection, setSelection] = useState({
@@ -59,7 +62,7 @@ export const Manufacturer = () => {
 
     const handleFetchingData = async () => {
         setLoading(true)
-        const { data, error } = await supabase.from("manufacturer").select("*")
+        const { data, error } = await supabase.from("manufacturer").select("*").eq("workspaceId", authUser.workspaceId)
         if (data) {
             setOriginalData(data)
             let tempData: any = []
@@ -82,7 +85,7 @@ export const Manufacturer = () => {
 
     const handleDeleteItemInManufacturer = async () => {
         const key = Number(selection.key)
-        const { data, error }: any = await supabase.from("manufacturer").select("*")
+        const { data, error }: any = await supabase.from("manufacturer").select("*").eq("workspaceId", authUser.workspaceId)
         if (data) {
             const deletedKey = data[key].id
             const { data: DeleteData, error: ErrorData } = await supabase.from("manufacturer").delete().match({ id: deletedKey })

@@ -2,8 +2,11 @@ import { Grid, Container, Row, Text, Spacer, Table, Link, Textarea, Button, Card
 import React, { useState, useEffect } from "react"
 import { supabase } from "../../../utils/supabase"
 import { Sidemenu } from "../Sidemenu"
+import { authUserState } from "../../../core/recoil/auth"
+import { useRecoilValue } from "recoil"
 
 export const Products = () => {
+    const authUser = useRecoilValue(authUserState)
     const [openSubmission, setOpenSubmission] = useState(false)
     const [loading, setLoading] = useState(false)
     const [selection, setSelection] = useState({
@@ -59,9 +62,12 @@ export const Products = () => {
 
     const handleFetchingData = async () => {
         setLoading(true)
-        const { data, error } = await supabase.from("products").select("*")
+        const { data, error } = await supabase.from("products").select("*").eq("workspaceId", authUser.workspaceId)
         if (data) {
-            const { data: dataEquipmentCategory, error: errorEquipmentCategory } = await supabase.from("equipment-category").select("*")
+            const { data: dataEquipmentCategory, error: errorEquipmentCategory } = await supabase
+                .from("equipment-category")
+                .select("*")
+                .eq("workspaceId", authUser.workspaceId)
             setEquipmentCategoryData(dataEquipmentCategory)
             setOriginalData(data)
             let tempData: any = []
@@ -73,7 +79,7 @@ export const Products = () => {
                         key: index,
                         equipmentCategory: cat.name,
                         description: item.data.description,
-                        detail: item.data.website,
+                        details: item.data.details,
                     })
                     setData(tempData)
                 } else {
@@ -81,7 +87,7 @@ export const Products = () => {
                         key: index,
                         equipmentCategory: item.data.equipmentCategory,
                         description: item.data.description,
-                        detail: item.data.website,
+                        details: item.data.details,
                     })
                 }
                 setData(tempData)
@@ -95,7 +101,7 @@ export const Products = () => {
 
     const handleDeleteItemInProduct = async () => {
         const key = Number(selection.key)
-        const { data, error }: any = await supabase.from("products").select("*")
+        const { data, error }: any = await supabase.from("products").select("*").eq("workspaceId", authUser.workspaceId)
         if (data) {
             const deletedKey = data[key].id
             const { data: DeleteData, error: ErrorData } = await supabase.from("products").delete().match({ id: deletedKey })
@@ -116,7 +122,7 @@ export const Products = () => {
         const { equipmentCategory, description, details } = products
         const { data, error } = await supabase.from("products").insert([
             {
-                workspaceId: "b8cab7ff-a584-4dac-974f-9555fe096e33",
+                workspaceId: authUser.workspaceId,
                 data: {
                     equipmentCategory,
                     description,
@@ -244,7 +250,11 @@ export const Products = () => {
                             No Parent
                         </option>
                         {originalEquipmentCategoryData.map(({ id, name }: any) => {
-                            return <option value={id}>{name}</option>
+                            return (
+                                <option key={id} value={id}>
+                                    {name}
+                                </option>
+                            )
                         })}
                     </select>
                     <Textarea
@@ -257,7 +267,7 @@ export const Products = () => {
                         onChange={handleSetProductData}
                     />
                     <Textarea
-                        name="detail"
+                        name="details"
                         spellCheck={false}
                         bordered
                         label="Details"

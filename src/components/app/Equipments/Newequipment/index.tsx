@@ -2,9 +2,14 @@ import { Grid, Container, Row, Link, Text, Spacer, Card, Input, Button, Textarea
 import { Iconly } from "react-iconly"
 import { useState, useEffect } from "react"
 import { supabase } from "../../../../utils/supabase"
+import { authUserState } from "../../../../core/recoil/auth"
+import { useRecoilValue } from "recoil"
+import { useRouter } from "next/router"
 
-export const NewEquipments = () => {
+export const NewEquipments = ({ submitButton }: Props) => {
+    const router = useRouter()
     const [data, setData] = useState<any[]>([])
+    const authUser = useRecoilValue(authUserState)
     const [loading, setLoading] = useState(true)
     const [locationData, setLocationData] = useState<any>([])
     const [manufacturerData, setManufacturerData] = useState<any>([])
@@ -36,7 +41,6 @@ export const NewEquipments = () => {
     })
 
     const handleSetEquipmentData = (event: any) => {
-        console.log(event.target.name, event.target.value)
         setEquipment({ ...equipment, [event.target.name]: event.target.value })
     }
 
@@ -60,51 +64,52 @@ export const NewEquipments = () => {
             capacityUnit,
             description,
         } = equipment
-        console.log(equipment)
-        // const { data, error } = await supabase.from("equipments").insert([
-        //     {
-        //         workspaceId: "b8cab7ff-a584-4dac-974f-9555fe096e33",
-        //         ownerNumber,
-        //         costCenter,
-        //         serialNumber,
-        //         chipId,
-        //         equipmentStatus,
-        //         vendorNumber,
-        //         location: 1,
-        //         equipmentCategory: Number(equipmentCategory),
-        //         checklistId: Number(checklistId),
-        //         company: Number(company),
-        //         manufacturer: Number(manufacturer),
-        //         inspectionDate,
-        //         capacity: {
-        //             capacity1,
-        //             capacity2,
-        //             capacity3,
-        //             capacityUnit,
-        //         },
-        //         description,
-        //     },
-        // ])
-        // console.log(data, error)
+        const { data, error } = await supabase.from("equipments").insert([
+            {
+                workspaceId: authUser.workspaceId,
+                ownerNumber,
+                costCenter,
+                serialNumber,
+                chipId,
+                equipmentStatus,
+                vendorNumber,
+                location: Number(location),
+                equipmentCategory: Number(equipmentCategory),
+                company: company,
+                manufacturer: Number(manufacturer),
+                inspectionDate,
+                capacity: {
+                    capacity1,
+                    capacity2,
+                    capacity3,
+                    capacityUnit,
+                },
+                description,
+            },
+        ])
+        if (data) {
+            submitButton()
+            router.push("/app/equipments")
+        }
     }
 
     const handleFetchEquipmentData = async () => {
-        const { data } = await supabase.from("equipments").select("*")
+        const { data } = await supabase.from("equipments").select("*").eq("workspaceId", authUser.workspaceId)
         setEquipmentData(data)
     }
 
     const handleFetchEquipmentCategoryData = async () => {
-        const { data } = await supabase.from("equipment-category").select("*")
+        const { data } = await supabase.from("equipment-category").select("*").eq("workspaceId", authUser.workspaceId)
         setEquipmentCategoryData(data)
     }
 
     const handleFetchManufacturerData = async () => {
-        const { data } = await supabase.from("manufacturer").select("*")
+        const { data } = await supabase.from("manufacturer").select("*").eq("workspaceId", authUser.workspaceId)
         setManufacturerData(data)
     }
 
     const handleFetchLocationsData = async () => {
-        const { data } = await supabase.from("location").select("*")
+        const { data } = await supabase.from("location").select("*").eq("workspaceId", authUser.workspaceId)
         setLocationData(data)
     }
 
@@ -162,8 +167,11 @@ export const NewEquipments = () => {
                                         <select name="location" onChange={handleSetEquipmentData}>
                                             <option value={9999}>Choose one</option>
                                             {locationData.map((item: any) => {
-                                                console.log(item)
-                                                return <option value={item.id}>{item.data.name}</option>
+                                                return (
+                                                    <option key={item.id} value={item.id}>
+                                                        {item.data.name}
+                                                    </option>
+                                                )
                                             })}
                                         </select>
                                     </Container>
@@ -193,7 +201,11 @@ export const NewEquipments = () => {
                                         <select name="equipmentCategory" onChange={handleSetEquipmentData}>
                                             <option value={9999}>Choose one</option>
                                             {equipmentCategoryData.map((item: any) => {
-                                                return <option value={item.id}>{item.name}</option>
+                                                return (
+                                                    <option key={item.id} value={item.id}>
+                                                        {item.name}
+                                                    </option>
+                                                )
                                             })}
                                         </select>
                                     </Container>
@@ -281,7 +293,11 @@ export const NewEquipments = () => {
                                         <select name="manufacturer" onChange={handleSetEquipmentData}>
                                             <option value={9999}>Choose one</option>
                                             {manufacturerData.map((item: any) => {
-                                                return <option value={item.id}>{item.data.name}</option>
+                                                return (
+                                                    <option key={item.id} value={item.id}>
+                                                        {item.data.name}
+                                                    </option>
+                                                )
                                             })}
                                         </select>
                                     </Container>
@@ -348,8 +364,8 @@ export const NewEquipments = () => {
                                         <Spacer y={0.3} />
                                         <select name="capacityUnit" onChange={handleSetEquipmentData}>
                                             <option value={9999}>Choose one</option>
-                                            <option value={0}>Ton</option>
-                                            <option value={1}>Kg</option>
+                                            <option value="Ton">Ton</option>
+                                            <option value="Kg">Kg</option>
                                         </select>
                                     </Container>
                                 </Row>
@@ -384,4 +400,8 @@ export const NewEquipments = () => {
             </Grid>
         </Grid.Container>
     )
+}
+
+interface Props {
+    submitButton: () => void
 }
