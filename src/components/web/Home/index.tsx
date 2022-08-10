@@ -1,6 +1,10 @@
 import React from "react"
 import { Container, Spacer, Grid, Row, Text, Button } from "@nextui-org/react"
 import { Header } from "../Header"
+import NextImage from "next/image"
+import Image1 from "../../../../public/assets/images/1.png"
+import Image2 from "../../../../public/assets/images/2.png"
+import Image3 from "../../../../public/assets/images/3.png"
 
 export const Home = () => {
     return (
@@ -48,9 +52,9 @@ const Features = () => {
         <Container gap={0} justify="center">
             <Grid.Container>
                 <Grid xs={12} md={6}>
-                    <Container>
+                    <Container display="flex" direction="column" justify="center" alignItems="center">
                         <Text h2 weight="bold">
-                            Save time by having everything in one platform
+                            Save time by having everything in one platform.
                         </Text>
                         <Text>
                             Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem
@@ -58,12 +62,16 @@ const Features = () => {
                         </Text>
                     </Container>
                 </Grid>
-                <Grid xs={12} md={6}></Grid>
-            </Grid.Container>
-            <Grid.Container>
-                <Grid xs={12} md={6}></Grid>
                 <Grid xs={12} md={6}>
-                    <Container>
+                    <NextImage src={Image1} width={600} height={370} objectFit="contain" />
+                </Grid>
+            </Grid.Container>
+            <Grid.Container css={{ marginTop: 120 }}>
+                <Grid xs={12} md={6}>
+                    <NextImage src={Image3} width={600} height={370} objectFit="contain" />
+                </Grid>
+                <Grid xs={12} md={6}>
+                    <Container display="flex" direction="column" justify="center" alignItems="center">
                         <Text h2 weight="bold">
                             Mitigate risks by managing your data, equipments better and faster than before
                         </Text>
@@ -74,9 +82,9 @@ const Features = () => {
                     </Container>
                 </Grid>
             </Grid.Container>
-            <Grid.Container>
+            <Grid.Container css={{ marginTop: 120 }}>
                 <Grid xs={12} md={6}>
-                    <Container>
+                    <Container display="flex" direction="column" justify="center" alignItems="center">
                         <Text h2 weight="bold">
                             Save time by having everything in one platform
                         </Text>
@@ -86,7 +94,9 @@ const Features = () => {
                         </Text>
                     </Container>
                 </Grid>
-                <Grid xs={12} md={6}></Grid>
+                <Grid xs={12} md={6}>
+                    <NextImage src={Image2} width={600} height={370} objectFit="contain" />
+                </Grid>
             </Grid.Container>
         </Container>
     )
